@@ -1,0 +1,79 @@
+// <uniquifier>: Use a unique and descriptive class name
+// <weight>: Use a value from 300 to 800
+
+.mws-li {
+    font-family: "Merriweather Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 300;
+    font-style: italic;
+  }
+
+  .mws-r {
+    font-family: "Merriweather Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+  }
+
+  .mws-sbi {
+    font-family: "Merriweather Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-style: italic;
+  }
+
+  .mws-xb {
+    font-family: "Merriweather Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 800;
+    font-style: normal;
+  }
+
+  .mw-l {
+    font-family: "Merriweather", serif;
+    font-weight: 300;
+    font-style: normal;
+  }
+  
+  .mw-r {
+    font-family: "Merriweather", serif;
+    font-weight: 400;
+    font-style: normal;
+  }
+  
+  .mw-b {
+    font-family: "Merriweather", serif;
+    font-weight: 700;
+    font-style: normal;
+  }
+  
+  .mw-bl {
+    font-family: "Merriweather", serif;
+    font-weight: 900;
+    font-style: normal;
+  }
+  
+  .mw-li {
+    font-family: "Merriweather", serif;
+    font-weight: 300;
+    font-style: italic;
+  }
+  
+  .mw-ri {
+    font-family: "Merriweather", serif;
+    font-weight: 400;
+    font-style: italic;
+  }
+  
+  .mw-bi {
+    font-family: "Merriweather", serif;
+    font-weight: 700;
+    font-style: italic;
+  }
+  
+  .mw-bli {
+    font-family: "Merriweather", serif;
+    font-weight: 900;
+    font-style: italic;
+  }
+  
