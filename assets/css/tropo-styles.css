@@ -1,5 +1,5 @@
 :root {
-    --link-med: hsl(204, 71%, 30%);
+    --info-med: hsl(204, 71%, 30%);
 }
 
 .mws-li {
@@ -93,8 +93,8 @@
     font-family: "Merriweather Serif", serif;
     }
 
-    .link-med {
-    color: var(--link-med);
+    .info-med {
+    color: var(--info-med);
     }
 
   /* LAYOUT */
@@ -114,7 +114,11 @@
   .weather-bg {
     background-image: url(../images/WT-body-footer-td.png);
     background-size: cover;
-    background-position: center;
+    /* background-position: center; */
+  }
+
+  .bottom-bg {
+    background-position: bottom;
   }
 
   .tile {
