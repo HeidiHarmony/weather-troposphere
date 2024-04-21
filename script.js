@@ -67,7 +67,7 @@ function getCoordinates(APIurl) {
 }
 
 function getWeatherData(lat, lon) {
-    var weatherAPIurl = 'https://api.openweathermap.org/data/2.5/weather?lat=' + lat + '&lon=' + lon + '&exclude=minutely,hourly&appid=' + apiKey;
+    var weatherAPIurl = 'https://api.openweathermap.org/data/2.5/weather?lat=' + lat + '&lon=' + lon + '&exclude=minutely,hourly&appid=' + apiKey + '&units=imperial';
     try {
         fetch(weatherAPIurl)
             .then(function(response) {
@@ -76,24 +76,62 @@ function getWeatherData(lat, lon) {
             .then(function(data) {
                 // Extract weather data from the data object
                 console.log(data);
-                var currentWeather = data.weather[0].main;
-                var currentTemp = data.weather[0].main.temp;
-                var currentHumidity = data.current.humidity;
-                var currentWindSpeed = data.current.wind_speed;
 
-                // Now you can use the weather data as needed
-               // console.log('Current Weather:', currentWeather);
+                var city = data.name;
+                var currentWeather = data.weather[0].description;
+                var weatherIcon = data.weather[0].icon;
+                var currentTemp = data.main.temp;
+                currentTemp = Math.round(currentTemp);
+                var currentHumidity = data.main.humidity;
+                currentHumidity = Math.round(currentHumidity);
+                var currentWindSpeed = data.wind.speed;
+                currentWindSpeed = Math.round(currentWindSpeed);
+
+                console.log('City:', city);
+                console.log('Current Conditions:', currentWeather);
+                console.log ('Weather Icon:', weatherIcon);
                 console.log('Current Temperature:', currentTemp);
                 console.log('Current Humidity:', currentHumidity);
                 console.log('Current Wind Speed:', currentWindSpeed);
 
-                document.getElementById("put-city").innerHTML = city;
-                var currentDate = new Date().toLocaleDateString();
-                document.getElementById("put-date").innerHTML = currentDate;
-                document.getElementById("put-conditions").innerHTML = currentWeather;
+                var weatherData = {
+                    city: city,
+                    currentWeather: currentWeather,
+                    weatherIcon: weatherIcon,
+                    currentTemp: currentTemp,
+                    currentHumidity: currentHumidity,
+                    currentWindSpeed: currentWindSpeed
+                };
 
+                var myCityArray = JSON.parse(localStorage.getItem('cityArray')) || [];
+                myCityArray.push(weatherData);
+                localStorage.setItem('cityArray', JSON.stringify(myCityArray));
+
+                console.log('Weather Data:', weatherData);
+
+                // Call the function to display the weather data
+                displayWeatherData();
             });
     } catch (error) {
         console.log('Error: ' + error);
+    }
+}
+
+function displayWeatherData(){
+    // Display the weather data on the page
+    // Retrieve the cityArray from local storage and parse it back into an array
+    var myCityArray = JSON.parse(localStorage.getItem('cityArray')) || [];
+
+    // If there's at least one item in the array, display the data of the last item
+    if (myCityArray.length > 0) {
+        var weatherData = myCityArray[myCityArray.length - 1]; // Get the last item in the array
+
+        document.getElementById("put-city").innerHTML = weatherData.city;
+        var currentDate = new Date().toLocaleDateString();
+        document.getElementById("put-date").innerHTML = currentDate;
+        document.getElementById("put-conditions").innerHTML = weatherData.currentWeather + '<img src="http://openweathermap.org/img/w/' + weatherData.weatherIcon + '.png">';
+        document.getElementById("put-temperature").innerHTML = weatherData.currentTemp;
+        document.getElementById("put-humidity").innerHTML = weatherData.currentHumidity;
+        document.getElementById("put-wind").innerHTML = weatherData.currentWindSpeed;
     }
 }
