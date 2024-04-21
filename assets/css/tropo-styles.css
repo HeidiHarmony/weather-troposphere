@@ -1,3 +1,7 @@
+:root {
+    --link-med: hsl(204, 71%, 30%);
+}
+
 .mws-li {
     font-family: "Merriweather Sans", sans-serif;
     font-optical-sizing: auto;
@@ -89,6 +93,10 @@
     font-family: "Merriweather Serif", serif;
     }
 
+    .link-med {
+    color: var(--link-med);
+    }
+
   /* LAYOUT */
 
   .block {
@@ -111,6 +119,14 @@
 
   .tile {
     background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .tile-bright {
+    background-color: rgba(255, 255, 255, 1.0);
     border-radius: 10px;
     padding: 20px;
     margin: 10px;
