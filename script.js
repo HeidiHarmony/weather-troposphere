@@ -4,6 +4,9 @@ document.getElementById('search-button').addEventListener('click', function(even
     var state = document.getElementById('state-select').value;
     var zipCode = document.getElementById('zipcode-select').value;
 
+    var citystate = city + ', ' + state;
+    var location = [citystate, zipCode];
+
     if ((city && state) || zipCode) {
         var searchType = '';
         // At least one of the criteria is met, allow search
@@ -25,6 +28,9 @@ document.getElementById('search-button').addEventListener('click', function(even
     } else {
         alert('Please enter either city and state or zip code.');
     } 
+
+        // Save the search criteria to local storage
+        saveSearchCriteria(city, state, zipCode);
 });
 
 const baseURL = 'http://api.openweathermap.org/geo/1.0/';
@@ -37,7 +43,7 @@ function getAPIurl(searchType, city, state, zipCode) {
         APIurl = baseURL + endpoint + zipCode + ',' + 'US' + '&appid=' + apiKey;
     } else {
         endpoint = 'direct?q=';
-        APIurl = baseURL + endpoint + city + ',' + state + ',' + 'US' + '&limit=5&appid=' + apiKey;
+        APIurl = baseURL + endpoint + city + ',' + state + ',' + 'US' + '&limit=1&appid=' + apiKey;
     }
     console.log('API URL: ' + APIurl);
     return APIurl;
@@ -50,7 +56,7 @@ function getCoordinates(APIurl) {
                 return response.json();
             })
             .then(function(data) {
-                // Extract lat and lon values from the data object
+                // Extract lat and lon values from the first object in the data array
                 var lat = data.lat;
                 var lon = data.lon;
                 
@@ -77,7 +83,7 @@ function getWeatherData(lat, lon) {
                 // Extract weather data from the data object
                 console.log(data);
 
-                var city = data.name;
+                var location = data.name;
                 var currentWeather = data.weather[0].description;
                 var weatherIcon = data.weather[0].icon;
                 var currentTemp = data.main.temp;
@@ -87,7 +93,7 @@ function getWeatherData(lat, lon) {
                 var currentWindSpeed = data.wind.speed;
                 currentWindSpeed = Math.round(currentWindSpeed);
 
-                console.log('City:', city);
+                console.log('City:', location);
                 console.log('Current Conditions:', currentWeather);
                 console.log ('Weather Icon:', weatherIcon);
                 console.log('Current Temperature:', currentTemp);
@@ -95,7 +101,7 @@ function getWeatherData(lat, lon) {
                 console.log('Current Wind Speed:', currentWindSpeed);
 
                 var weatherData = {
-                    city: city,
+                    city: location,
                     currentWeather: currentWeather,
                     weatherIcon: weatherIcon,
                     currentTemp: currentTemp,
@@ -135,3 +141,118 @@ function displayWeatherData(){
         document.getElementById("put-wind").innerHTML = weatherData.currentWindSpeed;
     }
 }
+
+
+// Save search criteria to localStorage
+
+// Function to save search criteria to local storage
+function saveSearchCriteria(city, state, zipcode) {
+    // Retrieve existing search history from local storage
+    let searched = JSON.parse(localStorage.getItem('searched')) || [];
+
+    // Create an object to hold the search criteria
+    const searchCriteria = {
+        city: city,
+        state: state,
+        zipcode: zipcode
+    };
+
+    // Add the search criteria to the search history
+    searched.push(searchCriteria);
+
+    // Save the updated search history to local storage
+    localStorage.setItem('searched', JSON.stringify(searched));
+
+    // Update the search history displayed on the page
+    updateSearchHistoryUI();
+}
+
+// Function to retrieve search history from local storage
+function getSearchHistory() {
+    // Retrieve the search history array from local storage
+    const searchedJSON = localStorage.getItem('searched');
+
+    // Parse the JSON string to convert it back to an array
+    const searched = JSON.parse(searchedJSON) || [];
+
+    // Return the search history array
+    return searched;
+}
+
+// Function to update the search history displayed on the page
+function updateSearchHistoryUI() {
+    const searched = getSearchHistory();
+    const historyContainer = document.getElementById('put-search-history');
+
+    // Clear existing search history displayed on the page
+    historyContainer.innerHTML = '';
+
+    // Loop through each search term and create a button with delete icon for it
+    searched.forEach((searchCriteria, index) => {
+        const listItem = document.createElement('div');
+        listItem.classList.add('search-item');
+
+        const button = document.createElement('button');
+        button.textContent = `${searchCriteria.city}, ${searchCriteria.state}, ${searchCriteria.zipcode}`;
+        button.classList.add('search-button', 'button');
+
+// Attach event listener to the button to trigger API call
+button.addEventListener('click', () => {
+    // Get the new search criteria
+    var newCity = document.getElementById('city-select').value;
+    var newState = document.getElementById('state-select').value;
+    var newZipCode = document.getElementById('zipcode-select').value;
+
+    // Perform API call with the new search criteria
+    var APIurl = getAPIurl(searchType, newCity, newState, newZipCode);
+    getCoordinates(APIurl);
+
+    console.log('API call triggered with search criteria:', newCity, newState, newZipCode);
+});
+        const deleteButton = document.createElement('button');
+        deleteButton.innerHTML = '&#x274C;'; // Unicode for 'X' character (delete icon)
+        deleteButton.classList.add('delete-button');
+
+        // Attach event listener to the delete button to remove the search item
+        deleteButton.addEventListener('click', () => {
+            removeSearchItem(index);
+        });
+
+        listItem.appendChild(button);
+        listItem.appendChild(deleteButton);
+
+        // Append the button to the history container
+        historyContainer.appendChild(listItem);
+    });
+
+    // Create and append the "Clear All" button
+    const clearAllButton = document.createElement('button');
+    clearAllButton.textContent = 'Clear All';
+    clearAllButton.classList.add('clear-all-button', 'button', 'is-dark', 'is-outlined', 'mt-3');
+    clearAllButton.addEventListener('click', clearAllSearchHistory);
+    historyContainer.appendChild(clearAllButton);
+}
+
+// Function to remove a search item from the search history
+function removeSearchItem(index) {
+    let searched = getSearchHistory();
+    searched.splice(index, 1); // Remove the item at the specified index
+    localStorage.setItem('searched', JSON.stringify(searched)); // Update local storage
+    updateSearchHistoryUI(); // Update the displayed search history
+}
+
+// Function to clear all search history
+function clearAllSearchHistory() {
+    localStorage.removeItem('searched'); // Remove the search history from local storage
+    updateSearchHistoryUI(); // Update the displayed search history
+}
+
+// Call updateSearchHistoryUI when the page loads to display initial search history
+updateSearchHistoryUI();
+
+
+
+
+
+
+
