@@ -127,6 +127,13 @@
     /* background-position: center; */
   }
 
+  .weather-bg2 {
+    background-image: url(../images/WT-earth-footer-td.jpg);
+    background-size: cover;
+    background-position: center;
+    /* background-position: center; */
+  }
+
   .bottom-bg {
     background-position: bottom;
   }
