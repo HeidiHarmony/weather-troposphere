@@ -77,9 +77,11 @@ function getCoordinates(APIurl) {
 }
 
 function getWeatherData(lat, lon) {
-    var weatherAPIurl = 'https://api.openweathermap.org/data/2.5/weather?lat=' + lat + '&lon=' + lon + '&exclude=minutely,hourly&appid=' + apiKey + '&units=imperial';
+
+    var currentWeatherAPIurl = 'https://api.openweathermap.org/data/2.5/weather?lat=' + lat + '&lon=' + lon + '&exclude=minutely,hourly&appid=' + apiKey + '&units=imperial';
+
     try {
-        fetch(weatherAPIurl)
+        fetch(currentWeatherAPIurl)
             .then(function(response) {
                 return response.json();
             })
@@ -119,15 +121,40 @@ function getWeatherData(lat, lon) {
 
                 console.log('Weather Data:', weatherData);
 
-                // Call the function to display the weather data
-                displayWeatherData();
+                // Call the function to display the 5-day forecast
+                getFiveDayForecast(lat, lon);
             });
     } catch (error) {
         console.log('Error: ' + error);
     }
 }
 
-function displayWeatherData(){
+function getFiveDayForecast (lat, lon) {
+
+    var fivedayWeatherAPIurl = 'https://api.openweathermap.org/data/2.5/forecast?lat=' + lat + '&lon=' + lon + '&exclude=minutely,hourly&appid=' + apiKey + '&units=imperial';
+
+try {
+    fetch(fivedayWeatherAPIurl)
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(dataFiveDay) {
+            // Extract weather data from the data object
+            console.log(dataFiveDay);
+
+            var forecastArray = dataFiveDay.list;
+            console.log(forecastArray);
+
+            // Call the function to display the weather data
+            displayWeatherData();
+        });
+    }
+
+catch (error) {
+    console.log('Rut ro! Error: ' + error);
+}}
+
+function displayWeatherData() {
     // Display the weather data on the page
     // Retrieve the cityArray from local storage and parse it back into an array
     var myCityArray = JSON.parse(localStorage.getItem('cityArray')) || [];
@@ -144,6 +171,18 @@ function displayWeatherData(){
         document.getElementById("put-humidity").innerHTML = weatherData.currentHumidity;
         document.getElementById("put-wind").innerHTML = weatherData.currentWindSpeed;
     }
+
+    // If there are no items in the array, display a message
+    else {
+        document.getElementById("put-city").innerHTML = 'No data available';
+        document.getElementById("put-date").innerHTML = '';
+        document.getElementById("put-conditions").innerHTML = '';
+        document.getElementById("put-temperature").innerHTML = '';
+        document.getElementById("put-humidity").innerHTML = '';
+        document.getElementById("put-wind").innerHTML = '';
+    }
+
+    saveSearchCriteria(city, state, zipCode);
 }
 
 
