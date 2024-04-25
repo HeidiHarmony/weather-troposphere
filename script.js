@@ -50,26 +50,30 @@ function getAPIurl(searchType, city, state, zipCode) {
 }
 
 function getCoordinates(APIurl) {
-    try {
-        fetch(APIurl)
-            .then(function(response) {
-                return response.json();
-            })
-            .then(function(data) {
-                // Extract lat and lon values from the first object in the data array
-                var lat = data.lat;
-                var lon = data.lon;
-                
-                // Now you can use lat and lon variables as needed
-                console.log('Latitude:', lat);
-                console.log('Longitude:', lon);
+    fetch(APIurl)
+        .then(response => response.json())
+        .then(data => {
+            var lat, lon;
 
-                // Call the next function to get weather data
-                getWeatherData(lat, lon);
-            });
-    } catch (error) {
-        console.log('Error: ' + error);
-    }
+            // Check if data is an array
+            if (Array.isArray(data)) {
+                // If it's an array, extract lat and lon from the first object
+                lat = data[0].lat;
+                lon = data[0].lon;
+            } else {
+                // If it's not an array, extract lat and lon directly from the object
+                lat = data.lat;
+                lon = data.lon;
+            }
+
+            // Now you can use lat and lon variables as needed
+            console.log('Latitude:', lat);
+            console.log('Longitude:', lon);
+
+            // Call the next function to get weather data
+            getWeatherData(lat, lon);
+        })
+        .catch(error => console.log('Error: ' + error));
 }
 
 function getWeatherData(lat, lon) {
