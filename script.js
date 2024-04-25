@@ -7,6 +7,8 @@ document.getElementById('search-button').addEventListener('click', function(even
     var citystate = city + ', ' + state;
     var location = [citystate, zipCode];
 
+    //Search input validation
+
     if ((city && state) || zipCode) {
         var searchType = '';
         // At least one of the criteria is met, allow search
@@ -233,7 +235,7 @@ function updateSearchHistoryUI() {
     // Loop through each search term and create a button with delete icon for it
     searched.forEach((searchCriteria, index) => {
         const listItem = document.createElement('div');
-        listItem.classList.add('search-item');
+        listItem.classList.add('search-item', 'inline');
 
         const button = document.createElement('button');
         button.textContent = `${searchCriteria.city}, ${searchCriteria.state}, ${searchCriteria.zipcode}`;

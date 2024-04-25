@@ -97,10 +97,20 @@
     color: var(--info-med);
     }
 
+    .delete-button {
+      margin-right: 12px;
+      size: .5em;
+    }
+
   /* LAYOUT */
 
   .block {
     display: block;
+  }
+
+  div.inline, .inline button {
+    display: inline;
+    margin-right: 1 em;
   }
 
   .center-me {
