@@ -1,3 +1,5 @@
+// Handle user search input -----------------------------------------------------------
+
 document.getElementById('search-button').addEventListener('click', function(event) {
     event.preventDefault(); // Prevent form submission
     var city = document.getElementById('city-select').value;
@@ -7,8 +9,7 @@ document.getElementById('search-button').addEventListener('click', function(even
     var citystate = city + ', ' + state;
     var location = [citystate, zipCode];
 
-    //Search input validation
-
+    // Search input validation
     if ((city && state) || zipCode) {
         var searchType = '';
         // At least one of the criteria is met, allow search
@@ -20,18 +21,23 @@ document.getElementById('search-button').addEventListener('click', function(even
             searchType = 'city-state-search';
             console.log('Searching by', searchType, 'city', city, 'state', state);
         }
-        // Perform search or any other action here
-        var APIurl = getAPIurl(searchType, city, state, zipCode);
+
+    // Perform API call to get the longitude and latitude with the searchType
+
+    var APIurl = getAPIurl(searchType, city, state, zipCode);
+
         getCoordinates(APIurl);
-    } else if (!city && state) {
+
+/*     } else if (!city && state) {
         alert('City is required to search by state.');
     } else if (city && !state) {
         alert('State is required to search by city.');
     } else {
         alert('Please enter either city and state or zip code.');
-    } 
+    }  */
 
-        // Save the search criteria to local storage
+// Save the search criteria to local storage
+
         saveSearchCriteria(city, state, zipCode);
 });
 
@@ -51,6 +57,8 @@ function getAPIurl(searchType, city, state, zipCode) {
     return APIurl;
 }
 
+// Function to get the coordinates of the location
+
 function getCoordinates(APIurl) {
     fetch(APIurl)
         .then(response => response.json())
@@ -68,7 +76,6 @@ function getCoordinates(APIurl) {
                 lon = data.lon;
             }
 
-            // Now you can use lat and lon variables as needed
             console.log('Latitude:', lat);
             console.log('Longitude:', lon);
 
@@ -190,7 +197,6 @@ function displayWeatherData() {
 
 // Save search criteria to localStorage
 
-// Function to save search criteria to local storage
 function saveSearchCriteria(city, state, zipcode) {
     // Retrieve existing search history from local storage
     let searched = JSON.parse(localStorage.getItem('searched')) || [];
@@ -214,13 +220,12 @@ function saveSearchCriteria(city, state, zipcode) {
 
 // Function to retrieve search history from local storage
 function getSearchHistory() {
-    // Retrieve the search history array from local storage
+
     const searchedJSON = localStorage.getItem('searched');
 
     // Parse the JSON string to convert it back to an array
     const searched = JSON.parse(searchedJSON) || [];
 
-    // Return the search history array
     return searched;
 }
 
