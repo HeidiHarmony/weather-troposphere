@@ -1,66 +1,77 @@
-// Handle user search input -----------------------------------------------------------
-
-document.getElementById('search-button').addEventListener('click', function(event) {
-    event.preventDefault(); // Prevent form submission
-    var city = document.getElementById('city-select').value;
-    var state = document.getElementById('state-select').value;
-    var zipCode = document.getElementById('zipcode-select').value;
-
-    var citystate = city + ', ' + state;
-    var location = [citystate, zipCode];
-
-    // Search input validation
-    if ((city && state) || zipCode) {
-        var searchType = '';
-        // At least one of the criteria is met, allow search
-        console.log('Search is allowed.');
-        if (zipCode) {
-            searchType = 'zip-search';
-            console.log('Searching by', searchType, zipCode);
-        } else {
-            searchType = 'city-state-search';
-            console.log('Searching by', searchType, 'city', city, 'state', state);
-        }
-
-    // Perform API call to get the longitude and latitude with the searchType
-
-    var APIurl = getAPIurl(searchType, city, state, zipCode);
-
-        getCoordinates(APIurl);
-
-/*     } else if (!city && state) {
-        alert('City is required to search by state.');
-    } else if (city && !state) {
-        alert('State is required to search by city.');
-    } else {
-        alert('Please enter either city and state or zip code.');
-    }  */
-
-// Save the search criteria to local storage
-
-        saveSearchCriteria(city, state, zipCode);
-});
-
 const baseURL = 'http://api.openweathermap.org/geo/1.0/';
 const apiKey = '2d84c33cb1d0e6e3ab00bca6bf053ead';
 
-function getAPIurl(searchType, city, state, zipCode) {
-    var endpoint, APIurl;
+document.getElementById('search-button').addEventListener('click', searchHandler);
+
+// Handle user search input -----------------------------------------------------------
+
+function searchHandler(event) {
+    event.preventDefault(); // Prevent form submission
+
+var city = document.getElementById('city-select').value;
+var state = document.getElementById('state-select').value;
+var zipCode = document.getElementById('zipcode-select').value;
+var searchType = '';
+    
+// Search input validation
+
+    if ((city && state) || zipCode) {
+
+        // At least one of the criteria is met, allow search
+        console.log('Search is allowed.');
+
+    } else {
+
+        // search criteria not met, display an error message
+        console.error('Search criteria not met.')
+        alert('Please enter a city and state or a zip code to search.');
+        return;
+    }
+
+// Determine the search type based on the search criteria
+
+        if (city && state && zipCode) {
+            searchType = 'zip-search';
+
+            console.log('Searching by', searchType, zipCode);
+
+        } else if (city && state) {
+            searchType = 'city-state-search';
+            console.log('Searching by', searchType, 'city', city, 'state', state);
+        } else {
+            searchType = 'zip-search';
+            console.log('Searching by', searchType, zipCode);
+        }
+
+        var coordinatesFullURL = constructAPIurl(searchType, city, state, zipCode);
+
+        console.log('Coordinates API URL:', coordinatesFullURL);
+
+ // Perform API call to get the longitude and latitude
+        
+        getCoordinates(coordinatesFullURL);
+};
+
+
+// Function to construct the API URL based on the search criteria provided -----------------------------------------------------------
+
+ function constructAPIurl(searchType, city, state, zipCode) {
+    var endpoint, coordinatesFullURL;
     if (searchType === 'zip-search') {
         endpoint = 'zip?zip='
-        APIurl = baseURL + endpoint + zipCode + ',' + 'US' + '&appid=' + apiKey;
+        coordinatesFullURL = baseURL + endpoint + zipCode + ',' + 'US' + '&appid=' + apiKey;
     } else {
         endpoint = 'direct?q=';
-        APIurl = baseURL + endpoint + city + ',' + state + ',' + 'US' + '&limit=1&appid=' + apiKey;
+        coordinatesFullURL = baseURL + endpoint + city + ',' + state + ',' + 'US' + '&limit=1&appid=' + apiKey;
     }
-    console.log('API URL: ' + APIurl);
-    return APIurl;
+    console.log('API URL: ' + coordinatesFullURL);
+    return coordinatesFullURL;
 }
 
 // Function to get the coordinates of the location
 
-function getCoordinates(APIurl) {
-    fetch(APIurl)
+function getCoordinates(coordinatesFullURL) {
+    fetch(coordinatesFullURL)
         .then(response => response.json())
         .then(data => {
             var lat, lon;
@@ -85,6 +96,33 @@ function getCoordinates(APIurl) {
         .catch(error => console.log('Error: ' + error));
 }
 
+
+// Create a location object to store the search criteria for population and later retrieval
+
+class Location {
+    constructor(city, state, zipcode, lat, lon, displayName) {
+        this.city = city;
+        this.state = state;
+        this.zipcode = zipcode;
+        this.lat = lat;
+        this.lon = lon;
+        this.displayName = displayName;
+    }
+}
+
+const locationObject = new Location(city, state, zipCode, lat, lon, displayName);
+console.log(locationObject);
+
+// Retrieve the locationArray from local storage (if exists)
+let locationArray = JSON.parse(localStorage.getItem('locationArray')) || [];
+
+// Add the new locationObject to the array
+locationArray.push(locationObject);
+
+// Save the updated array back to local storage
+localStorage.setItem('locationArray', JSON.stringify(locationArray));
+
+
 function getWeatherData(lat, lon) {
 
     var currentWeatherAPIurl = 'https://api.openweathermap.org/data/2.5/weather?lat=' + lat + '&lon=' + lon + '&exclude=minutely,hourly&appid=' + apiKey + '&units=imperial';
@@ -98,7 +136,7 @@ function getWeatherData(lat, lon) {
                 // Extract weather data from the data object
                 console.log(data);
 
-                var location = data.name;
+                var displayName = data.name; //city name, different variable name to distinguish from the data submitted by user. Returned name may not be the same as the user input
                 var currentWeather = data.weather[0].description;
                 var weatherIcon = data.weather[0].icon;
                 var currentTemp = data.main.temp;
@@ -108,7 +146,7 @@ function getWeatherData(lat, lon) {
                 var currentWindSpeed = data.wind.speed;
                 currentWindSpeed = Math.round(currentWindSpeed);
 
-                console.log('City:', location);
+                console.log('Location Name:', displayName);
                 console.log('Current Conditions:', currentWeather);
                 console.log ('Weather Icon:', weatherIcon);
                 console.log('Current Temperature:', currentTemp);
@@ -124,9 +162,9 @@ function getWeatherData(lat, lon) {
                     currentWindSpeed: currentWindSpeed
                 };
 
-                var myCityArray = JSON.parse(localStorage.getItem('cityArray')) || [];
-                myCityArray.push(weatherData);
-                localStorage.setItem('cityArray', JSON.stringify(myCityArray));
+                var weatherDataArray = JSON.parse(localStorage.getItem('weatherDataArray')) || [];
+                weatherDataArray.push(weatherData);
+                localStorage.setItem('weatherDataArray', JSON.stringify(weatherDataArray));
 
                 console.log('Weather Data:', weatherData);
 
