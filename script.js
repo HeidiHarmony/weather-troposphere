@@ -97,21 +97,21 @@ function getCoordinates(coordinatesFullURL) {
 }
 
 
-// Create a location object to store the search criteria for population and later retrieval
+// Create a location class and then an object to store the search criteria for population and later retrieval
 
 class Location {
-    constructor(city, state, zipcode, lat, lon, displayName) {
+    constructor(city, state, zipCode, lat, lon, displayName) {
         this.city = city;
         this.state = state;
-        this.zipcode = zipcode;
+        this.zipcode = zipCode;
         this.lat = lat;
         this.lon = lon;
-        this.displayName = displayName;
+        this.name = displayName;
     }
 }
 
 const locationObject = new Location(city, state, zipCode, lat, lon, displayName);
-console.log(locationObject);
+console.log('locationObject', locationObject);
 
 // Retrieve the locationArray from local storage (if exists)
 let locationArray = JSON.parse(localStorage.getItem('locationArray')) || [];
@@ -121,6 +121,9 @@ locationArray.push(locationObject);
 
 // Save the updated array back to local storage
 localStorage.setItem('locationArray', JSON.stringify(locationArray));
+
+
+// Function to get the weather data
 
 
 function getWeatherData(lat, lon) {
@@ -154,7 +157,7 @@ function getWeatherData(lat, lon) {
                 console.log('Current Wind Speed:', currentWindSpeed);
 
                 var weatherData = {
-                    city: location,
+                    displayName: displayName,
                     currentWeather: currentWeather,
                     weatherIcon: weatherIcon,
                     currentTemp: currentTemp,
@@ -203,14 +206,14 @@ catch (error) {
 
 function displayWeatherData() {
     // Display the weather data on the page
-    // Retrieve the cityArray from local storage and parse it back into an array
-    var myCityArray = JSON.parse(localStorage.getItem('cityArray')) || [];
+    // Retrieve the weatherDataArray from local storage and parse it back into an array
+    var weatherDataArray = JSON.parse(localStorage.getItem('weatherDataArray')) || [];
 
     // If there's at least one item in the array, display the data of the last item
-    if (myCityArray.length > 0) {
-        var weatherData = myCityArray[myCityArray.length - 1]; // Get the last item in the array
+    if (weatherDataArray.length > 0) {
+        var weatherData = weatherDataArray[weatherDataArray.length - 1]; // Get the last item in the array
 
-        document.getElementById("put-city").innerHTML = weatherData.city;
+        document.getElementById("put-city").innerHTML = weatherData.displayName;
         var currentDate = new Date().toLocaleDateString();
         document.getElementById("put-date").innerHTML = currentDate;
         document.getElementById("put-conditions").innerHTML = weatherData.currentWeather + '<img src="http://openweathermap.org/img/w/' + weatherData.weatherIcon + '.png">';
@@ -229,13 +232,13 @@ function displayWeatherData() {
         document.getElementById("put-wind").innerHTML = '';
     }
 
-    saveSearchCriteria(city, state, zipCode);
+    // saveSearchCriteria(city, state, zipCode);
 }
 
 
 // Save search criteria to localStorage
 
-function saveSearchCriteria(city, state, zipcode) {
+/* function saveSearchCriteria(city, state, zipcode) {
     // Retrieve existing search history from local storage
     let searched = JSON.parse(localStorage.getItem('searched')) || [];
 
@@ -250,16 +253,16 @@ function saveSearchCriteria(city, state, zipcode) {
     searched.push(searchCriteria);
 
     // Save the updated search history to local storage
-    localStorage.setItem('searched', JSON.stringify(searched));
+    localStorage.setItem('searched', JSON.stringify(searched)); */
+
 
     // Update the search history displayed on the page
     updateSearchHistoryUI();
-}
 
 // Function to retrieve search history from local storage
 function getSearchHistory() {
 
-    const searchedJSON = localStorage.getItem('searched');
+    const searchedJSON = localStorage.getItem('locationArray');
 
     // Parse the JSON string to convert it back to an array
     const searched = JSON.parse(searchedJSON) || [];
@@ -275,13 +278,53 @@ function updateSearchHistoryUI() {
     // Clear existing search history displayed on the page
     historyContainer.innerHTML = '';
 
-    // Loop through each search term and create a button with delete icon for it
-    searched.forEach((searchCriteria, index) => {
+    // Loop through each searched location and create a button with delete icon for it
+    searched.forEach((locationObject, index) => {
         const listItem = document.createElement('div');
         listItem.classList.add('search-item', 'inline');
 
         const button = document.createElement('button');
-        button.textContent = `${searchCriteria.city}, ${searchCriteria.state}, ${searchCriteria.zipcode}`;
+
+        if (searched === 'zip-search' && locationObject.city && locationObject.state) { 
+            button.textContent = `${locationObject.displayName} \n 
+            ${locationObject.city}, ${locationObject.state},\n
+            ${searchCriteria.zipcode}`;
+        } else if (searchType === 'city-state-search') {
+            button.textContent = `${locationObject.displayName} \n 
+            ${locationObject.city}, ${locationObject.state}`;
+        } else {
+            button.textContent = `${locationObject.displayName} \n 
+            ${searchCriteria.zipcode}`;
+        }
+
+        button.classList.add('search-button', 'button');
+
+        // Attach event listener to the button to trigger API call
+        button.addEventListener('click', () => {
+            // Get the new search criteria
+            var newCity = document.getElementById('city-select').value;
+            var newState = document.getElementById('state-select').value;
+            var newZipCode = document.getElementById('zipcode-select').value;
+
+            // Perform API call with the new search criteria
+            var APIurl = getAPIurl(searchType, newCity, newState, newZipCode);
+            getCoordinates(APIurl);
+
+            console.log('API call triggered with search criteria:', newCity, newState, newZipCode);
+        });
+
+        const deleteButton = document.createElement('button');
+        deleteButton.innerHTML = '&#x274C;'; // Unicode for 'X' character (delete icon)
+    });
+}
+                (searchType === 'city-state-search') {
+                button.textContent = `${locationObject.displayName} \n 
+                ${locationObject.city}, ${locationObject.state}`:
+            } else {
+                button.textContent = `${locationObject.displayName} \n 
+                ${searchCriteria.zipcode}`;
+            };
+        
         button.classList.add('search-button', 'button');
 
 // Attach event listener to the button to trigger API call
