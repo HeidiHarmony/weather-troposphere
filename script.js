@@ -49,8 +49,8 @@ var searchType = '';
 
  // Perform API call to get the longitude and latitude
         
-        getCoordinates(coordinatesFullURL);
-};
+        getCoordinates(coordinatesFullURL, city, state, zipCode);
+}; /* End of searchHandler function */
 
 
 // Function to construct the API URL based on the search criteria provided -----------------------------------------------------------
@@ -65,12 +65,13 @@ var searchType = '';
         coordinatesFullURL = baseURL + endpoint + city + ',' + state + ',' + 'US' + '&limit=1&appid=' + apiKey;
     }
     console.log('API URL: ' + coordinatesFullURL);
-    return coordinatesFullURL;
+    return coordinatesFullURL; /* For use in the getCoordinates function */
 }
 
-// Function to get the coordinates of the location
+// Function to make API call and get the coordinates of the location-----------------------------------------------------------
 
 function getCoordinates(coordinatesFullURL) {
+    try {
     fetch(coordinatesFullURL)
         .then(response => response.json())
         .then(data => {
@@ -90,119 +91,127 @@ function getCoordinates(coordinatesFullURL) {
             console.log('Latitude:', lat);
             console.log('Longitude:', lon);
 
-            // Call the next function to get weather data
-            getWeatherData(lat, lon);
-        })
-        .catch(error => console.log('Error: ' + error));
-}
+        // Call the function to create a location object
+        createLocationObject(city, state, zipCode, lat, lon, displayName);
+
+        })} /* End of try block */
+        catch (error) {
+            console.log('Couldn\'t return coordinates: ' + error);
+        }
+
+} /* End of getCoordinates function */
 
 
-// Create a location class and then an object to store the search criteria for population and later retrieval
+// Create a location class and then an object to store the search criteria for population and later retrieval-----------------------------------------------------------
 
-class Location {
-    constructor(city, state, zipCode, lat, lon, displayName) {
-        this.city = city;
-        this.state = state;
-        this.zipcode = zipCode;
-        this.lat = lat;
-        this.lon = lon;
-        this.name = displayName;
+function createLocationObject(city, state, zipCode, lat, lon, displayName) {
+    class Location {
+        constructor(city, state, zipCode, lat, lon, displayName) {
+            this.city = city;
+            this.state = state;
+            this.zipcode = zipCode;
+            this.lat = lat;
+            this.lon = lon;
+            this.name = displayName;
+        }
     }
-}
+    
+    // Create the location object from the data from the API call
 
-const locationObject = new Location(city, state, zipCode, lat, lon, displayName);
-console.log('locationObject', locationObject);
+    const locationObject = new Location(city, state, zipCode, lat, lon, displayName);
+    console.log('locationObject', locationObject);
+    // Retrieve the locationArray from local storage (if exists)
+    let locationArray = JSON.parse(localStorage.getItem('locationArray')) || [];
+    // Add the new locationObject to the array
+    locationArray.push(locationObject);
+    // Save the updated array back to local storage
+    localStorage.setItem('locationArray', JSON.stringify(locationArray));
 
-// Retrieve the locationArray from local storage (if exists)
-let locationArray = JSON.parse(localStorage.getItem('locationArray')) || [];
+    // Update the search history displayed on the page
+    updateSearchHistoryUI();
 
-// Add the new locationObject to the array
-locationArray.push(locationObject);
+} /* End of createLocationObject function */
 
-// Save the updated array back to local storage
-localStorage.setItem('locationArray', JSON.stringify(locationArray));
-
-
-// Function to get the weather data
-
+// Function to get the current weather data-----------------------------------------------------------
 
 function getWeatherData(lat, lon) {
+    lat = locationObject.lat;
+    lon = locationObject.lon;
 
     var currentWeatherAPIurl = 'https://api.openweathermap.org/data/2.5/weather?lat=' + lat + '&lon=' + lon + '&exclude=minutely,hourly&appid=' + apiKey + '&units=imperial';
 
-    try {
-        fetch(currentWeatherAPIurl)
-            .then(function(response) {
-                return response.json();
-            })
-            .then(function(data) {
-                // Extract weather data from the data object
-                console.log(data);
-
-                var displayName = data.name; //city name, different variable name to distinguish from the data submitted by user. Returned name may not be the same as the user input
-                var currentWeather = data.weather[0].description;
-                var weatherIcon = data.weather[0].icon;
-                var currentTemp = data.main.temp;
-                currentTemp = Math.round(currentTemp);
-                var currentHumidity = data.main.humidity;
-                currentHumidity = Math.round(currentHumidity);
-                var currentWindSpeed = data.wind.speed;
-                currentWindSpeed = Math.round(currentWindSpeed);
-
-                console.log('Location Name:', displayName);
-                console.log('Current Conditions:', currentWeather);
-                console.log ('Weather Icon:', weatherIcon);
-                console.log('Current Temperature:', currentTemp);
-                console.log('Current Humidity:', currentHumidity);
-                console.log('Current Wind Speed:', currentWindSpeed);
-
-                var weatherData = {
-                    displayName: displayName,
-                    currentWeather: currentWeather,
-                    weatherIcon: weatherIcon,
-                    currentTemp: currentTemp,
-                    currentHumidity: currentHumidity,
-                    currentWindSpeed: currentWindSpeed
-                };
-
-                var weatherDataArray = JSON.parse(localStorage.getItem('weatherDataArray')) || [];
-                weatherDataArray.push(weatherData);
-                localStorage.setItem('weatherDataArray', JSON.stringify(weatherDataArray));
-
-                console.log('Weather Data:', weatherData);
-
-                // Call the function to display the 5-day forecast
-                getFiveDayForecast(lat, lon);
-            });
-    } catch (error) {
-        console.log('Error: ' + error);
-    }
-}
-
-function getFiveDayForecast (lat, lon) {
-
-    var fivedayWeatherAPIurl = 'https://api.openweathermap.org/data/2.5/forecast?lat=' + lat + '&lon=' + lon + '&exclude=minutely,hourly&appid=' + apiKey + '&units=imperial';
-
-try {
-    fetch(fivedayWeatherAPIurl)
+    fetch(currentWeatherAPIurl)
         .then(function(response) {
             return response.json();
         })
-        .then(function(dataFiveDay) {
-            // Extract weather data from the data object
-            console.log(dataFiveDay);
+        .then(function(data) {
+            console.log(data);
 
-            var forecastArray = dataFiveDay.list;
-            console.log(forecastArray);
+            var displayName = data.name;
+            var currentWeather = data.weather[0].description;
+            var weatherIcon = data.weather[0].icon;
+            var currentTemp = Math.round(data.main.temp);
+            var currentHumidity = Math.round(data.main.humidity);
+            var currentWindSpeed = Math.round(data.wind.speed);
+
+            console.log('Location Name:', displayName);
+            console.log('Current Conditions:', currentWeather);
+            console.log ('Weather Icon:', weatherIcon);
+            console.log('Current Temperature:', currentTemp);
+            console.log('Current Humidity:', currentHumidity);
+            console.log('Current Wind Speed:', currentWindSpeed);
+
+            var weatherData = {
+                displayName: displayName,
+                currentWeather: currentWeather,
+                weatherIcon: weatherIcon,
+                currentTemp: currentTemp,
+                currentHumidity: currentHumidity,
+                currentWindSpeed: currentWindSpeed
+            };
+
+            var weatherDataArray = JSON.parse(localStorage.getItem('weatherDataArray')) || [];
+            weatherDataArray.push(weatherData);
+            localStorage.setItem('weatherDataArray', JSON.stringify(weatherDataArray));
+
+            console.log('Saved Weather Data:', weatherDataArray);
 
             // Call the function to display the weather data
             displayWeatherData();
-        });
-    }
+        })
+        .catch(error => console.log('Rut ro! Current weather data could not be fetched: ' + error));
+}
 
-catch (error) {
-    console.log('Rut ro! Error: ' + error);
-}}
+// Function to get the 5-day forecast data-----------------------------------------------------------
+
+function getFiveDayForecast(locationObject) {
+    var lat = locationObject.lat;
+    var lon = locationObject.lon;
+    var fivedayWeatherAPIurl = 'https://api.openweathermap.org/data/2.5/forecast?lat=' + lat + '&lon=' + lon + '&exclude=minutely,hourly&appid=' + apiKey + '&units=imperial';
+
+    try {
+        fetch(fivedayWeatherAPIurl)
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(dataFiveDay) {
+                // Extract weather data from the data object
+                console.log(dataFiveDay);
+
+                var forecastArray = dataFiveDay.list;
+                console.log(forecastArray);
+
+                // Save the forecastArray to local storage
+                localStorage.setItem('forecastArray', JSON.stringify(forecastArray));
+
+
+                // Call the function to display the weather data
+                displayForecastData(forecastArray);
+            });
+    } catch (error) {
+        console.log('Rut ro! Error: ' + error);
+    }
+}
 
 function displayWeatherData() {
     // Display the weather data on the page
@@ -232,32 +241,63 @@ function displayWeatherData() {
         document.getElementById("put-wind").innerHTML = '';
     }
 
-    // saveSearchCriteria(city, state, zipCode);
+    // Call the function to get the 5-day forecast
+    getFiveDayForecast();
+}
+
+// Display the 5-day forecast data on the page-----------------------------------------------------------
+
+function displayForecastData(forecastArray) {
+
+    const numberOfDays = 5;
+
+    // Retrieve the forecastArray from local storage and parse it back into an array
+    var forecastArray = JSON.parse(localStorage.getItem('forecastArray')) || [];
+
+    // Loop through the forecastArray and display the data on the page
+    for (var i = 0; i < numberOfDays; i++) {
+        var forecast = forecastArray[i];
+        var forecastDate = forecast.dt_txt;
+        var forecastTemp = forecast.main.temp;
+        var forecastHumidity = forecast.main.humidity;
+        var forecastWeather = forecast.weather[0].description;
+        var forecastIcon = forecast.weather[0].icon;
+
+        // Create a div element for each forecast item
+        var forecastItem = document.createElement('div');
+        forecastItem.classList.add('column', 'is-one-fifth');
+
+        // Create a paragraph element to display the date
+        var forecastDateElement = document.createElement('p');
+        forecastDateElement.textContent = forecastDate;
+        forecastItem.appendChild(forecastDateElement);
+
+        // Create an image element to display the weather icon
+        var forecastIconElement = document.createElement('img');
+        forecastIconElement.src = 'http://openweathermap.org/img/w/' + forecastIcon + '.png';
+        forecastItem.appendChild(forecastIconElement);
+
+        // Create a paragraph element to display the temperature
+        var forecastTempElement = document.createElement('p');
+        forecastTempElement.textContent = 'Temp: ' + forecastTemp;
+        forecastItem.appendChild(forecastTempElement);
+
+        // Create a paragraph element to display the humidity
+        var forecastHumidityElement = document.createElement('p');
+        forecastHumidityElement.textContent = 'Humidity: ' + forecastHumidity;
+        forecastItem.appendChild(forecastHumidityElement);
+
+        // Create a paragraph element to display the weather description
+        var forecastWeatherElement = document.createElement('p');
+        forecastWeatherElement.textContent = forecastWeather;
+        forecastItem.appendChild(forecastWeatherElement);
+
+        // Append the forecast item to the forecast container
+        document.getElementById('put-forecast').appendChild(forecastItem);
+    }
 }
 
 
-// Save search criteria to localStorage
-
-/* function saveSearchCriteria(city, state, zipcode) {
-    // Retrieve existing search history from local storage
-    let searched = JSON.parse(localStorage.getItem('searched')) || [];
-
-    // Create an object to hold the search criteria
-    const searchCriteria = {
-        city: city,
-        state: state,
-        zipcode: zipcode
-    };
-
-    // Add the search criteria to the search history
-    searched.push(searchCriteria);
-
-    // Save the updated search history to local storage
-    localStorage.setItem('searched', JSON.stringify(searched)); */
-
-
-    // Update the search history displayed on the page
-    updateSearchHistoryUI();
 
 // Function to retrieve search history from local storage
 function getSearchHistory() {
@@ -275,7 +315,7 @@ function updateSearchHistoryUI() {
     const searched = getSearchHistory();
     const historyContainer = document.getElementById('put-search-history');
 
-    // Clear existing search history displayed on the page
+    // Clear prior search history displayed on the page
     historyContainer.innerHTML = '';
 
     // Loop through each searched location and create a button with delete icon for it
@@ -283,78 +323,44 @@ function updateSearchHistoryUI() {
         const listItem = document.createElement('div');
         listItem.classList.add('search-item', 'inline');
 
-        const button = document.createElement('button');
+        const retrieveButton = document.createElement('button');
 
         if (searched === 'zip-search' && locationObject.city && locationObject.state) { 
-            button.textContent = `${locationObject.displayName} \n 
+            retrieveButton.textContent = `${locationObject.displayName} \n 
             ${locationObject.city}, ${locationObject.state},\n
             ${searchCriteria.zipcode}`;
         } else if (searchType === 'city-state-search') {
-            button.textContent = `${locationObject.displayName} \n 
+            retrieveButton.textContent = `${locationObject.displayName} \n 
             ${locationObject.city}, ${locationObject.state}`;
         } else {
-            button.textContent = `${locationObject.displayName} \n 
+            retrieveButton.textContent = `${locationObject.displayName} \n 
             ${searchCriteria.zipcode}`;
         }
 
-        button.classList.add('search-button', 'button');
-
+        retrieveButton.classList.add('search-button', 'button');
+    
         // Attach event listener to the button to trigger API call
-        button.addEventListener('click', () => {
-            // Get the new search criteria
-            var newCity = document.getElementById('city-select').value;
-            var newState = document.getElementById('state-select').value;
-            var newZipCode = document.getElementById('zipcode-select').value;
-
-            // Perform API call with the new search criteria
-            var APIurl = getAPIurl(searchType, newCity, newState, newZipCode);
-            getCoordinates(APIurl);
-
-            console.log('API call triggered with search criteria:', newCity, newState, newZipCode);
+        retrieveButton.addEventListener('click', () => {
+            getWeatherData(locationObject.lat, locationObject.lon);
         });
 
+        // Create a delete button for each search item
         const deleteButton = document.createElement('button');
+
         deleteButton.innerHTML = '&#x274C;'; // Unicode for 'X' character (delete icon)
-    });
-}
-                (searchType === 'city-state-search') {
-                button.textContent = `${locationObject.displayName} \n 
-                ${locationObject.city}, ${locationObject.state}`:
-            } else {
-                button.textContent = `${locationObject.displayName} \n 
-                ${searchCriteria.zipcode}`;
-            };
-        
-        button.classList.add('search-button', 'button');
-
-// Attach event listener to the button to trigger API call
-button.addEventListener('click', () => {
-    // Get the new search criteria
-    var newCity = document.getElementById('city-select').value;
-    var newState = document.getElementById('state-select').value;
-    var newZipCode = document.getElementById('zipcode-select').value;
-
-    // Perform API call with the new search criteria
-    var APIurl = getAPIurl(searchType, newCity, newState, newZipCode);
-    getCoordinates(APIurl);
-
-    console.log('API call triggered with search criteria:', newCity, newState, newZipCode);
-});
-        const deleteButton = document.createElement('button');
-        deleteButton.innerHTML = '&#x274C;'; // Unicode for 'X' character (delete icon)
-        deleteButton.classList.add('delete-button');
+        deleteButton.classList.add('delete-button', 'button', 'is-danger', 'is-outlined');
 
         // Attach event listener to the delete button to remove the search item
         deleteButton.addEventListener('click', () => {
             removeSearchItem(index);
         });
 
-        listItem.appendChild(button);
+        listItem.appendChild(retrieveButton);
         listItem.appendChild(deleteButton);
 
         // Append the button to the history container
         historyContainer.appendChild(listItem);
-    });
+    }); /* End of forEach loop */
 
     // Create and append the "Clear All" button
     const clearAllButton = document.createElement('button');
@@ -362,7 +368,7 @@ button.addEventListener('click', () => {
     clearAllButton.classList.add('clear-all-button', 'button', 'is-dark', 'is-outlined', 'mt-3');
     clearAllButton.addEventListener('click', clearAllSearchHistory);
     historyContainer.appendChild(clearAllButton);
-}
+} /* End of updateSearchHistoryUI function */
 
 // Function to remove a search item from the search history
 function removeSearchItem(index) {
@@ -380,10 +386,3 @@ function clearAllSearchHistory() {
 
 // Call updateSearchHistoryUI when the page loads to display initial search history
 updateSearchHistoryUI();
-
-
-
-
-
-
-
