@@ -38,18 +38,21 @@ var searchType = '';
         } else if (city && state) {
             searchType = 'city-state-search';
             console.log('Searching by', searchType, 'city', city, 'state', state);
+            zipCode = '';
         } else {
             searchType = 'zip-search';
             console.log('Searching by', searchType, zipCode);
+            city = '';
+            state = '';
         }
 
         var coordinatesFullURL = constructAPIurl(searchType, city, state, zipCode);
 
-        console.log('Coordinates API URL:', coordinatesFullURL);
+        console.log('Next stop is getCoordinates function.');
 
  // Perform API call to get the longitude and latitude
         
-        getCoordinates(coordinatesFullURL, city, state, zipCode);
+    getCoordinates(coordinatesFullURL, city, state, zipCode, searchType);
 }; /* End of searchHandler function */
 
 
@@ -65,34 +68,38 @@ var searchType = '';
         coordinatesFullURL = baseURL + endpoint + city + ',' + state + ',' + 'US' + '&limit=1&appid=' + apiKey;
     }
     console.log('API URL: ' + coordinatesFullURL);
-    return coordinatesFullURL; /* For use in the getCoordinates function */
+
+    return coordinatesFullURL; /*Return to searchHandler function */
 }
 
 // Function to make API call and get the coordinates of the location-----------------------------------------------------------
 
-function getCoordinates(coordinatesFullURL) {
+function getCoordinates(coordinatesFullURL, city, state, zipCode, searchType) {
     try {
     fetch(coordinatesFullURL)
         .then(response => response.json())
         .then(data => {
-            var lat, lon;
+            var lat, lon, displayName;
 
             // Check if data is an array
             if (Array.isArray(data)) {
                 // If it's an array, extract lat and lon from the first object
                 lat = data[0].lat;
                 lon = data[0].lon;
+                displayName = data[0].name;
             } else {
                 // If it's not an array, extract lat and lon directly from the object
                 lat = data.lat;
                 lon = data.lon;
+                displayName = data.name;
             }
-
+            
             console.log('Latitude:', lat);
             console.log('Longitude:', lon);
+            console.log('Display Name:', displayName);
 
         // Call the function to create a location object
-        createLocationObject(city, state, zipCode, lat, lon, displayName);
+        createLocationObject(city, state, zipCode, lat, lon, displayName, searchType);
 
         })} /* End of try block */
         catch (error) {
@@ -104,21 +111,35 @@ function getCoordinates(coordinatesFullURL) {
 
 // Create a location class and then an object to store the search criteria for population and later retrieval-----------------------------------------------------------
 
-function createLocationObject(city, state, zipCode, lat, lon, displayName) {
+function createLocationObject(city, state, zipCode, lat, lon, displayName, searchType) {
+
     class Location {
-        constructor(city, state, zipCode, lat, lon, displayName) {
-            this.city = city;
-            this.state = state;
-            this.zipcode = zipCode;
+        constructor(city, state, zipCode, lat, lon, displayName, searchType) {
+            if (city === '') {
+                this.city = '';
+            } else {
+                this.city = city;
+            }
+            if (state === '') {
+                this.state = '';
+            } else {
+                this.state = state;
+            }
+            if (zipCode === '') {
+                this.zipcode = '';
+            } else {
+                this.zipcode = zipCode;
+            }
             this.lat = lat;
             this.lon = lon;
-            this.name = displayName;
+            this.displayName = displayName;
+            this.searchType = searchType;
         }
     }
     
     // Create the location object from the data from the API call
 
-    const locationObject = new Location(city, state, zipCode, lat, lon, displayName);
+    const locationObject = new Location(city, state, zipCode, lat, lon, displayName, searchType);
     console.log('locationObject', locationObject);
     // Retrieve the locationArray from local storage (if exists)
     let locationArray = JSON.parse(localStorage.getItem('locationArray')) || [];
@@ -127,14 +148,18 @@ function createLocationObject(city, state, zipCode, lat, lon, displayName) {
     // Save the updated array back to local storage
     localStorage.setItem('locationArray', JSON.stringify(locationArray));
 
+    console.log('locationArray', locationArray);
+
+    getWeatherData(locationObject);
+
     // Update the search history displayed on the page
-    updateSearchHistoryUI();
+    updateSearchHistoryUI(locationObject, locationArray);
 
 } /* End of createLocationObject function */
 
 // Function to get the current weather data-----------------------------------------------------------
 
-function getWeatherData(lat, lon) {
+function getWeatherData(locationObject) {
     lat = locationObject.lat;
     lon = locationObject.lon;
 
@@ -177,7 +202,7 @@ function getWeatherData(lat, lon) {
             console.log('Saved Weather Data:', weatherDataArray);
 
             // Call the function to display the weather data
-            displayWeatherData();
+            displayWeatherData(weatherData, weatherDataArray);
         })
         .catch(error => console.log('Rut ro! Current weather data could not be fetched: ' + error));
 }
@@ -213,7 +238,7 @@ function getFiveDayForecast(locationObject) {
     }
 }
 
-function displayWeatherData() {
+function displayWeatherData(weatherData, weatherDataArray) {
     // Display the weather data on the page
     // Retrieve the weatherDataArray from local storage and parse it back into an array
     var weatherDataArray = JSON.parse(localStorage.getItem('weatherDataArray')) || [];
@@ -305,50 +330,51 @@ function getSearchHistory() {
     const searchedJSON = localStorage.getItem('locationArray');
 
     // Parse the JSON string to convert it back to an array
-    const searched = JSON.parse(searchedJSON) || [];
+    const locationArray = JSON.parse(searchedJSON) || [];
 
-    return searched;
+    return locationArray;
 }
 
 // Function to update the search history displayed on the page
 function updateSearchHistoryUI() {
-    const searched = getSearchHistory();
+
+    const locationArray = getSearchHistory();
     const historyContainer = document.getElementById('put-search-history');
 
     // Clear prior search history displayed on the page
     historyContainer.innerHTML = '';
 
     // Loop through each searched location and create a button with delete icon for it
-    searched.forEach((locationObject, index) => {
+    locationArray.forEach((locationObject, index) => {
         const listItem = document.createElement('div');
         listItem.classList.add('search-item', 'inline');
 
         const retrieveButton = document.createElement('button');
 
-        if (searched === 'zip-search' && locationObject.city && locationObject.state) { 
-            retrieveButton.textContent = `${locationObject.displayName} \n 
-            ${locationObject.city}, ${locationObject.state},\n
-            ${searchCriteria.zipcode}`;
-        } else if (searchType === 'city-state-search') {
-            retrieveButton.textContent = `${locationObject.displayName} \n 
-            ${locationObject.city}, ${locationObject.state}`;
+        if (locationObject.typeSearch === 'zip-search' && locationObject.city && locationObject.state) { 
+            retrieveButton.innerHTML = `${locationObject.displayName} \n 
+            <span style="font-weight: 400;">${locationObject.city}, ${locationObject.state}\n
+            ${locationObject.zipcode}</span>`;
+        } else if (locationObject.searchType === 'city-state-search') {
+            retrieveButton.innerHTML = `${locationObject.displayName} \n 
+            <span style="font-weight: 400;">${locationObject.city}, ${locationObject.state}</span>`;
         } else {
-            retrieveButton.textContent = `${locationObject.displayName} \n 
-            ${searchCriteria.zipcode}`;
+            retrieveButton.innerHTML = `${locationObject.displayName} \n 
+            <span style="font-weight: 400;">${locationObject.zipcode}</span>`;
         }
 
         retrieveButton.classList.add('search-button', 'button');
     
         // Attach event listener to the button to trigger API call
         retrieveButton.addEventListener('click', () => {
-            getWeatherData(locationObject.lat, locationObject.lon);
+            getWeatherData(locationObject);
         });
 
         // Create a delete button for each search item
         const deleteButton = document.createElement('button');
 
         deleteButton.innerHTML = '&#x274C;'; // Unicode for 'X' character (delete icon)
-        deleteButton.classList.add('delete-button', 'button', 'is-danger', 'is-outlined');
+        deleteButton.classList.add('delete-button', 'button', 'is-ghost', 'is-small');
 
         // Attach event listener to the delete button to remove the search item
         deleteButton.addEventListener('click', () => {
@@ -365,22 +391,22 @@ function updateSearchHistoryUI() {
     // Create and append the "Clear All" button
     const clearAllButton = document.createElement('button');
     clearAllButton.textContent = 'Clear All';
-    clearAllButton.classList.add('clear-all-button', 'button', 'is-dark', 'is-outlined', 'mt-3');
+    clearAllButton.classList.add('clear-all-button', 'button', 'is-info', 'is-small', 'mt-3');
     clearAllButton.addEventListener('click', clearAllSearchHistory);
     historyContainer.appendChild(clearAllButton);
 } /* End of updateSearchHistoryUI function */
 
 // Function to remove a search item from the search history
 function removeSearchItem(index) {
-    let searched = getSearchHistory();
-    searched.splice(index, 1); // Remove the item at the specified index
-    localStorage.setItem('searched', JSON.stringify(searched)); // Update local storage
+    let locationArray = getSearchHistory();
+    locationArray.splice(index, 1); // Remove the item at the specified index
+    localStorage.setItem('locationArray', JSON.stringify(locationArray)); // Update local storage
     updateSearchHistoryUI(); // Update the displayed search history
 }
 
 // Function to clear all search history
 function clearAllSearchHistory() {
-    localStorage.removeItem('searched'); // Remove the search history from local storage
+    localStorage.removeItem('locationArray'); // Remove the search history from local storage
     updateSearchHistoryUI(); // Update the displayed search history
 }
 
