@@ -317,15 +317,19 @@ function displayForecastData() {
             // Get the forecast container for the current day
             var forecastContainer = document.getElementById('put-day' + d + '-conditions');
 
+            // Check if the forecast container has any child nodes
+            // If it does, clear the container
+            while (forecastContainer.firstChild) {
+                forecastContainer.removeChild(forecastContainer.firstChild);
+            }
+
             // Create and append elements to the forecast container
-            appendElement(forecastContainer, 'h3', forecastDay);
-            appendElement(forecastContainer, 'p', forecastDate);
+            appendElement(forecastContainer, 'h3', forecastDay + ' ' + forecastDate);
             appendElement(forecastContainer, 'p', forecastWeather);
             appendElement(forecastContainer, 'img', null, 'http://openweathermap.org/img/w/' + forecastIcon + '.png');
             appendElement(forecastContainer, 'p', 'Temp: ' + forecastTemp + '°F');
             appendElement(forecastContainer, 'p', 'Humidity: ' + forecastHumidity + '%');
             appendElement(forecastContainer, 'p', 'Wind: ' + forecastWindSpeed + ' mph');
-           
         }
     }
 }
@@ -387,7 +391,7 @@ function updateSearchHistoryUI() {
         const deleteButton = document.createElement('button');
 
         deleteButton.innerHTML = '&#x274C;'; // Unicode for 'X' character (delete icon)
-        deleteButton.classList.add('delete-button', 'button', 'is-ghost', 'is-small');
+        deleteButton.classList.add('delete-button', 'button', 'is-ghost', 'is-small', 'pl-1');
 
         // Attach event listener to the delete button to remove the search item
         deleteButton.addEventListener('click', () => {
