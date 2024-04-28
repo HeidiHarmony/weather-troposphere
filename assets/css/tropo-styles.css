@@ -119,7 +119,35 @@
     align-items: center; /* vertically center */
   }
 
+  #five-day div h3 {
+    font-size: 1.5rem;
+    color: var(--info-med)
+  }
+
+  .forecast-conditions h3 {
+    font-size: 1.5rem;
+    color: var(--info-med);
+    font-weight: 700;
+  }
+
+  .forecast-conditions p {
+    font-size: 1.25rem;
+    font-family: 'Merriweather Sans', sans-serif;
+    font-weight: 400;
+    margin-bottom: 12px;
+    color: white;
+  }
+
+  div.forecast-conditions p:first-child {
+    color: var(--info-med);
+  }
+
+
   /* SECTION FORMATTING */
+
+  #search-container {
+    max-width: 25%;
+  }
 
   .weather-bg {
     background-image: url(../images/WT-body-footer-td.png);

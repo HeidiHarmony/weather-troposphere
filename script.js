@@ -1,6 +1,12 @@
 const baseURL = 'http://api.openweathermap.org/geo/1.0/';
 const apiKey = '2d84c33cb1d0e6e3ab00bca6bf053ead';
 
+// Event listener for DOM content loaded
+document.addEventListener('DOMContentLoaded', () => {
+    // Call updateSearchHistoryUI when the page loads to display initial search history
+updateSearchHistoryUI();
+});
+
 document.getElementById('search-button').addEventListener('click', searchHandler);
 
 // Handle user search input -----------------------------------------------------------
@@ -77,34 +83,39 @@ var searchType = '';
 function getCoordinates(coordinatesFullURL, city, state, zipCode, searchType) {
     try {
     fetch(coordinatesFullURL)
-        .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+        throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
         .then(data => {
+            console.log(data);
             var lat, lon, displayName;
 
             // Check if data is an array
-            if (Array.isArray(data)) {
-                // If it's an array, extract lat and lon from the first object
-                lat = data[0].lat;
-                lon = data[0].lon;
-                displayName = data[0].name;
-            } else {
-                // If it's not an array, extract lat and lon directly from the object
-                lat = data.lat;
-                lon = data.lon;
-                displayName = data.name;
-            }
-            
-            console.log('Latitude:', lat);
-            console.log('Longitude:', lon);
-            console.log('Display Name:', displayName);
+                if (Array.isArray(data)) {
+                    // If it's an array, extract lat and lon from the first object
+                    lat = data[0].lat;
+                    lon = data[0].lon;
+                    displayName = data[0].name;
+                } else {
+                    // If it's not an array, extract lat and lon directly from the object
+                    lat = data.lat;
+                    lon = data.lon;
+                    displayName = data.name;
 
-        // Call the function to create a location object
-        createLocationObject(city, state, zipCode, lat, lon, displayName, searchType);
-
-        })} /* End of try block */
-        catch (error) {
-            console.log('Couldn\'t return coordinates: ' + error);
-        }
+                    console.log('Latitude:', lat);
+                    console.log('Longitude:', lon);
+                    console.log('Display Name:', displayName);
+                }
+ // Call the function to create a location object
+ createLocationObject(city, state, zipCode, lat, lon, displayName, searchType);
+            })
+        } catch (error) {
+            console.log('Rut ro! Coordinates could not be fetched: ' + error);
+        };
+          
 
 } /* End of getCoordinates function */
 
@@ -159,64 +170,78 @@ function createLocationObject(city, state, zipCode, lat, lon, displayName, searc
 
 // Function to get the current weather data-----------------------------------------------------------
 
+// Function to get the current weather data
 function getWeatherData(locationObject) {
-    lat = locationObject.lat;
-    lon = locationObject.lon;
+    const lat = locationObject.lat;
+    const lon = locationObject.lon;
 
-    var currentWeatherAPIurl = 'https://api.openweathermap.org/data/2.5/weather?lat=' + lat + '&lon=' + lon + '&exclude=minutely,hourly&appid=' + apiKey + '&units=imperial';
+    const currentWeatherAPIurl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&exclude=minutely,hourly&appid=${apiKey}&units=imperial`;
 
     fetch(currentWeatherAPIurl)
-        .then(function(response) {
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}`);
+            }
             return response.json();
         })
-        .then(function(data) {
-            console.log(data);
+        .then(data => {
+            console.log('Weather API response:', data);
 
-            var displayName = data.name;
-            var currentWeather = data.weather[0].description;
-            var weatherIcon = data.weather[0].icon;
-            var currentTemp = Math.round(data.main.temp);
-            var currentHumidity = Math.round(data.main.humidity);
-            var currentWindSpeed = Math.round(data.wind.speed);
+            const displayName = data.name;
+            const currentWeather = data.weather[0].description;
+            const weatherIcon = data.weather[0].icon;
+            const currentTemp = Math.round(data.main.temp);
+            const currentHumidity = Math.round(data.main.humidity);
+            const currentWindSpeed = Math.round(data.wind.speed);
 
-            console.log('Location Name:', displayName);
-            console.log('Current Conditions:', currentWeather);
-            console.log ('Weather Icon:', weatherIcon);
-            console.log('Current Temperature:', currentTemp);
-            console.log('Current Humidity:', currentHumidity);
-            console.log('Current Wind Speed:', currentWindSpeed);
-
-            var weatherData = {
-                displayName: displayName,
-                currentWeather: currentWeather,
-                weatherIcon: weatherIcon,
-                currentTemp: currentTemp,
-                currentHumidity: currentHumidity,
-                currentWindSpeed: currentWindSpeed
+            const weatherData = {
+                displayName,
+                currentWeather,
+                weatherIcon,
+                currentTemp,
+                currentHumidity,
+                currentWindSpeed
             };
 
-            var weatherDataArray = JSON.parse(localStorage.getItem('weatherDataArray')) || [];
+            console.log('Weather Data:', weatherData);
+
+            // Save weather data to local storage (optional)
+            const weatherDataArray = JSON.parse(localStorage.getItem('weatherDataArray')) || [];
             weatherDataArray.push(weatherData);
             localStorage.setItem('weatherDataArray', JSON.stringify(weatherDataArray));
 
-            console.log('Saved Weather Data:', weatherDataArray);
-
             // Call the function to display the weather data
-            displayWeatherData(weatherData, weatherDataArray);
+            displayWeatherData(weatherData, locationObject);
         })
-        .catch(error => console.log('Rut ro! Current weather data could not be fetched: ' + error));
+        .catch(error => {
+            console.error('Rut ro! Current weather data could not be fetched:', error);
+            // Handle error gracefully, e.g., display a message to the user
+        });
 }
+
 
 // Function to get the 5-day forecast data-----------------------------------------------------------
 
-function getFiveDayForecast(locationObject) {
-    var lat = locationObject.lat;
-    var lon = locationObject.lon;
-    var fivedayWeatherAPIurl = 'https://api.openweathermap.org/data/2.5/forecast?lat=' + lat + '&lon=' + lon + '&exclude=minutely,hourly&appid=' + apiKey + '&units=imperial';
+function getFiveDayForecast() {
 
-    try {
+    // Retrieve the location object from local storage
+    var locationObject = JSON.parse(localStorage.getItem('locationArray')).slice(-1)[0] ;
+
+
+    var lat = locationObject.lat;
+    console.log('Latitude:', lat);
+
+    var lon = locationObject.lon;
+    console.log('Longitude:', lon);
+
+    var fivedayWeatherAPIurl = 'https://api.openweathermap.org/data/2.5/forecast?lat=' + lat + '&lon=' + lon + '&appid=' + apiKey + '&units=imperial';
+    console.log('5-day forecast API URL:', fivedayWeatherAPIurl);
+
         fetch(fivedayWeatherAPIurl)
             .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('HTTP error ' + response.status);
+                }
                 return response.json();
             })
             .then(function(dataFiveDay) {
@@ -231,14 +256,11 @@ function getFiveDayForecast(locationObject) {
 
 
                 // Call the function to display the weather data
-                displayForecastData(forecastArray);
+                displayForecastData();
             });
-    } catch (error) {
-        console.log('Rut ro! Error: ' + error);
-    }
 }
 
-function displayWeatherData(weatherData, weatherDataArray) {
+function displayWeatherData() {
     // Display the weather data on the page
     // Retrieve the weatherDataArray from local storage and parse it back into an array
     var weatherDataArray = JSON.parse(localStorage.getItem('weatherDataArray')) || [];
@@ -258,12 +280,8 @@ function displayWeatherData(weatherData, weatherDataArray) {
 
     // If there are no items in the array, display a message
     else {
-        document.getElementById("put-city").innerHTML = 'No data available';
-        document.getElementById("put-date").innerHTML = '';
-        document.getElementById("put-conditions").innerHTML = '';
-        document.getElementById("put-temperature").innerHTML = '';
-        document.getElementById("put-humidity").innerHTML = '';
-        document.getElementById("put-wind").innerHTML = '';
+        console.error('No weather data available.');
+        alert('No weather data available.');
     }
 
     // Call the function to get the 5-day forecast
@@ -272,57 +290,52 @@ function displayWeatherData(weatherData, weatherDataArray) {
 
 // Display the 5-day forecast data on the page-----------------------------------------------------------
 
-function displayForecastData(forecastArray) {
-
+function displayForecastData() {
     const numberOfDays = 5;
+    const numberOfReadingsPerDay = 8;
+    const totalReadings = numberOfDays * numberOfReadingsPerDay;
 
     // Retrieve the forecastArray from local storage and parse it back into an array
     var forecastArray = JSON.parse(localStorage.getItem('forecastArray')) || [];
+    var dayArray = [];
 
     // Loop through the forecastArray and display the data on the page
-    for (var i = 0; i < numberOfDays; i++) {
-        var forecast = forecastArray[i];
-        var forecastDate = forecast.dt_txt;
-        var forecastTemp = forecast.main.temp;
-        var forecastHumidity = forecast.main.humidity;
-        var forecastWeather = forecast.weather[0].description;
-        var forecastIcon = forecast.weather[0].icon;
+    for (var d = 1; d <= numberOfDays; d++) {
+        var i = 3 + (d - 1) * numberOfReadingsPerDay;
+        if (i < totalReadings) {
+            var forecast = forecastArray[i];
+            dayArray[d] = forecast;
 
-        // Create a div element for each forecast item
-        var forecastItem = document.createElement('div');
-        forecastItem.classList.add('column', 'is-one-fifth');
+            const forecastDate = new Date(forecast.dt_txt).toLocaleDateString();
+            const forecastDay = new Date(forecast.dt_txt).toLocaleDateString('en-US', { weekday: 'long' });
+            const forecastTemp = Math.round(forecast.main.temp);
+            const forecastHumidity = Math.round(forecast.main.humidity);
+            const forecastWeather = forecast.weather[0].description;
+            const forecastIcon = forecast.weather[0].icon;
+            const forecastWindSpeed = Math.round(forecast.wind.speed);
 
-        // Create a paragraph element to display the date
-        var forecastDateElement = document.createElement('p');
-        forecastDateElement.textContent = forecastDate;
-        forecastItem.appendChild(forecastDateElement);
+            // Get the forecast container for the current day
+            var forecastContainer = document.getElementById('put-day' + d + '-conditions');
 
-        // Create an image element to display the weather icon
-        var forecastIconElement = document.createElement('img');
-        forecastIconElement.src = 'http://openweathermap.org/img/w/' + forecastIcon + '.png';
-        forecastItem.appendChild(forecastIconElement);
-
-        // Create a paragraph element to display the temperature
-        var forecastTempElement = document.createElement('p');
-        forecastTempElement.textContent = 'Temp: ' + forecastTemp;
-        forecastItem.appendChild(forecastTempElement);
-
-        // Create a paragraph element to display the humidity
-        var forecastHumidityElement = document.createElement('p');
-        forecastHumidityElement.textContent = 'Humidity: ' + forecastHumidity;
-        forecastItem.appendChild(forecastHumidityElement);
-
-        // Create a paragraph element to display the weather description
-        var forecastWeatherElement = document.createElement('p');
-        forecastWeatherElement.textContent = forecastWeather;
-        forecastItem.appendChild(forecastWeatherElement);
-
-        // Append the forecast item to the forecast container
-        document.getElementById('put-forecast').appendChild(forecastItem);
+            // Create and append elements to the forecast container
+            appendElement(forecastContainer, 'h3', forecastDay);
+            appendElement(forecastContainer, 'p', forecastDate);
+            appendElement(forecastContainer, 'p', forecastWeather);
+            appendElement(forecastContainer, 'img', null, 'http://openweathermap.org/img/w/' + forecastIcon + '.png');
+            appendElement(forecastContainer, 'p', 'Temp: ' + forecastTemp + '°F');
+            appendElement(forecastContainer, 'p', 'Humidity: ' + forecastHumidity + '%');
+            appendElement(forecastContainer, 'p', 'Wind: ' + forecastWindSpeed + ' mph');
+           
+        }
     }
 }
 
-
+function appendElement(parent, tagName, textContent, src) {
+    var element = document.createElement(tagName);
+    if (textContent) element.textContent = textContent;
+    if (src) element.src = src;
+    parent.appendChild(element);
+}
 
 // Function to retrieve search history from local storage
 function getSearchHistory() {
@@ -407,8 +420,9 @@ function removeSearchItem(index) {
 // Function to clear all search history
 function clearAllSearchHistory() {
     localStorage.removeItem('locationArray'); // Remove the search history from local storage
+
+    if (localStorage.getItem('locationArray') === null) {
+        console.log('Search history cleared.');
+    }
     updateSearchHistoryUI(); // Update the displayed search history
 }
-
-// Call updateSearchHistoryUI when the page loads to display initial search history
-updateSearchHistoryUI();
