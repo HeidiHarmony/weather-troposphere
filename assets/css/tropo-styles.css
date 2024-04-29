@@ -145,18 +145,18 @@
   }
 
   #five-day div h3 {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     color: var(--info-med)
   }
 
   .forecast-conditions h3 {
-    font-size: 1.5rem;
+    font-size: 1.15rem;
     color: var(--info-med);
     font-weight: 700;
   }
 
   .forecast-conditions p {
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-family: 'Merriweather Sans', sans-serif;
     font-weight: 400;
     margin-bottom: 6px;
@@ -171,8 +171,8 @@
   /* SECTION FORMATTING */
 
   #search-container {
-    max-width: 90%;
-    
+    max-width: 100%;
+
   }
 
   .weather-bg {
@@ -196,7 +196,7 @@
     background-color: rgba(255, 255, 255, 0.8);
     border-radius: 10px;
     padding: 10px;
-    margin: 5px;
+    margin: 4px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   }
 
@@ -204,14 +204,14 @@
     background-color: rgba(255, 255, 255, 1.0);
     border-radius: 10px;
     padding: 10px;
-    margin: 5px;
+    margin: 0px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   }
 
   .tile-dark {
     background-color: rgba(42,134,199, 0.8);
     border-radius: 10px;
-    padding: 12px;
+    padding: 5px;
     margin: 0px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   }
