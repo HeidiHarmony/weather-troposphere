@@ -56,6 +56,7 @@ var searchType = '';
 
         console.log('Next stop is getCoordinates function.');
 
+
  // Perform API call to get the longitude and latitude
         
     getCoordinates(coordinatesFullURL, city, state, zipCode, searchType);
@@ -205,7 +206,7 @@ function getWeatherData(locationObject) {
 
             console.log('Weather Data:', weatherData);
 
-            // Save weather data to local storage (optional)
+            // Save weather data to local storage
             const weatherDataArray = JSON.parse(localStorage.getItem('weatherDataArray')) || [];
             weatherDataArray.push(weatherData);
             localStorage.setItem('weatherDataArray', JSON.stringify(weatherDataArray));
@@ -215,7 +216,7 @@ function getWeatherData(locationObject) {
         })
         .catch(error => {
             console.error('Rut ro! Current weather data could not be fetched:', error);
-            // Handle error gracefully, e.g., display a message to the user
+         
         });
 }
 
@@ -267,7 +268,9 @@ function displayWeatherData() {
 
     // If there's at least one item in the array, display the data of the last item
     if (weatherDataArray.length > 0) {
+        console.log('weatherDataArray has data');
         var weatherData = weatherDataArray[weatherDataArray.length - 1]; // Get the last item in the array
+        console.log('weatherData:', weatherData);
 
         document.getElementById("put-city").innerHTML = weatherData.displayName;
         var currentDate = new Date().toLocaleDateString();
@@ -278,11 +281,12 @@ function displayWeatherData() {
         document.getElementById("put-wind").innerHTML = weatherData.currentWindSpeed;
     }
 
+
     // If there are no items in the array, display a message
-    else {
+/*     else {
         console.error('No weather data available.');
         alert('No weather data available.');
-    }
+    } */
 
     // Call the function to get the 5-day forecast
     getFiveDayForecast();

@@ -18,8 +18,12 @@
 </head>
 
 <body>
+
     <main class="weather-bg2 mx-auto">
+
+<!--Header-->
         <section id="lockup" class="center-me weather-bg bottom-bg">
+
             <div id="heading" class="is-centered">
                 <div><img src="./assets/images/WT-header-td.png" alt="Weather Troposphere" /></div>
                 <div id="subheading" class="is-full-width p-3">    
@@ -27,21 +31,22 @@
                 </div>
             </div>
            
-        </section>
+        </section> <!-- End Header-->
 
-        <section id="weather-data" class="columns is-centered p-4"> <!--COLS LEVEL 1-->
+<!--Weather Info Container-->
+        <section id="weather-data" class="columns is-centered m-2 p-3"> 
            
-            <div id="search-container" class="column is-3 is-full-mobile has-background-info-light p-4 m-3"> <!--COL LEVEL 2-->
-                <form id="search-form" class="is-centered tile">
-                    
+<!--Search and History Container-->
+            <div id="search-container" class="column is-12-mobile is-3-desktop has-background-info-light p-4 m-3 is-centered">
+                <form id="search-form" class="tile">
                     <div>
                         <div class="field">
-                            <label class="label has-text-info-dark is-size-5" for="search-input">Enter a city:</label>
+                            <label class="label has-text-info-dark is-size-5 is-size-6-tablet" for="search-input">Enter a city:</label>
                             <div class="control">
                                 <input class="input" type="text" id="city-select" placeholder="City">
                             </div>
                         
-                            <label class="label has-text-info-dark is-size-5" for="state-select">and choose a state:</label>
+                            <label class="label has-text-info-dark is-size-5 is-size-6-tablet" for="state-select">and choose a state:</label>
                             <div class="control">
                                 <select id="state-select" class="input dropdown-arrow" name="state">
                                         <option value="" disabled selected>State</option>    
@@ -100,30 +105,30 @@
                             </div>
                         </div>
                     </div>
-
-                        <hr />
+                    <div class="has-text-info is-size-6 mws-b my-5 flanking-lines">OR</div>
+                       
                         <div class="field">
-                            <label class="label has-text-info-dark is-size-5" for="search-input">Or enter a zip code:</label>
+                            <label class="label has-text-info-dark is-size-5 is-size-6-tablet" for="search-input">Enter a zip code:</label>
                             <div class="control">
                                 <input class="input" type="text" id="zipcode-select" placeholder="Zip Code">
                             </div>
-
-                        <hr />
+                        </div>
 
                         <div class="field">
                             <div class="control">
                                 <button class="button is-info" id="search-button">Search</button>
                             </div>
                         </div>
-                    </div>
                 </form>
+
                 <div id="search-history" class="is-centered">
                     <h2 class="is-size-5 mws-b info-med mt-3 mb-2">My Search History</h2>
                 <div id="put-search-history" class="p-2 m-2"></div>
               </div>
-            </div>
+            </div> <!--End Search Container-->
 
-            <div id="city-data" class="details column is-9 is-full-mobile is-multiline p-4 m-3">
+<!--Weather Conditions Container-->
+        <div id="city-data" class="details column is-12-mobile is-9-tablet is-9-desktop p-4">
                 <div class="columns is-desktop">
                     <div id="here-and-now" class="column is-narrow">
                         <h1 id="put-city" class="center-me is-size-3 mws-b link-med">City Name</h1>
@@ -146,28 +151,39 @@
                     <h2 class="block center-me is-size-4 mw-b has-text-black"><img id="wind" class="mr-3" src="./assets/images/wind.png" alt="Weather Icon"><span id="put-wind" class="mws-b">##</span>&nbsp;mph</h2>
                  </div>
             </div>
-            <div id="five-day" class="columns is-desktop">
-                <div class="column tile-dark has-text-white">
-                    <h3 id="put-day1">day1</h3>
-                    <div id="put-day1-conditions" class="forecast-conditions"></div>
-                 </div>
-                 <div class="column tile-dark has-text-white">
-                <h3 id="put-day2">day2</h3>
-                <div id="put-day2-conditions" class="forecast-conditions"></div>
+            <div id="five-day" class="columns is-multiline is-centered">
+                <div class="column is-4-desktop is-12-tablet is-12-mobile"> <!-- Full width on all screens for day1 -->
+                    <div class="tile-dark has-text-white">
+                        <h3 id="put-day1">day1</h3>
+                        <div id="put-day1-conditions" class="forecast-conditions"></div>
+                    </div>
                 </div>
-                <div class="column tile-dark has-text-white">
-                <h3 id="put-day3">day3</h3>
-                <div id="put-day3-conditions" class="forecast-conditions"></div>
+                <div class="column is-2-desktop is-half-tablet is-full-mobile"> <!-- Half width on tablet and full width on mobile for day2 -->
+                    <div class="tile-dark has-text-white">
+                        <h3 id="put-day2">day2</h3>
+                        <div id="put-day2-conditions" class="forecast-conditions"></div>
+                    </div>
                 </div>
-                <div class="column tile-dark has-text-white">
-                <h3 id="put-day4">day4</h3>
-                <div id="put-day4-conditions" class="forecast-conditions"></div>
+                <div class="column is-2-desktop is-half-tablet is-full-mobile"> <!-- Half width on tablet and full width on mobile for day3 -->
+                    <div class="tile-dark has-text-white">
+                        <h3 id="put-day3">day3</h3>
+                        <div id="put-day3-conditions" class="forecast-conditions"></div>
+                    </div>
                 </div>
-                <div class="column tile-dark has-text-white">
-                <h3 id="put-day5">day5</h3>
-                <div id="put-day5-conditions" class="forecast-conditions"></div>
+                <div class="column is-2-desktop is-half-tablet is-full-mobile"> <!-- Half width on tablet and full width on mobile for day4 -->
+                    <div class="tile-dark has-text-white">
+                        <h3 id="put-day4">day4</h3>
+                        <div id="put-day4-conditions" class="forecast-conditions"></div>
+                    </div>
                 </div>
-         </div>
+                <div class="column is-2-desktop is-half-tablet is-full-mobile"> <!-- Half width on tablet and full width on mobile for day5 -->
+                    <div class="tile-dark has-text-white">
+                        <h3 id="put-day5">day5</h3>
+                        <div id="put-day5-conditions" class="forecast-conditions"></div>
+                    </div>
+                </div>
+            </div>
+            
         </section>
 
 

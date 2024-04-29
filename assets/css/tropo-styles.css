@@ -93,6 +93,31 @@
     font-family: "Merriweather Serif", serif;
     }
 
+    .flanking-lines {
+      text-align: center;
+      position: relative;
+  }
+  
+  .flanking-lines::before,
+  .flanking-lines::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 40%; /* Adjust this value to control the length of the lines */
+      height: 1px;
+      background-color: var(--info-med);
+  }
+  
+  .flanking-lines::before {
+      left: 0;
+      transform: translate(0, -50%);
+  }
+  
+  .flanking-lines::after {
+      right: 0;
+      transform: translate(0, -50%);
+  }
+
     .info-med {
     color: var(--info-med);
     }
@@ -146,7 +171,8 @@
   /* SECTION FORMATTING */
 
   #search-container {
-    max-width: 25%;
+    max-width: 90%;
+    
   }
 
   .weather-bg {
@@ -169,24 +195,24 @@
   .tile {
     background-color: rgba(255, 255, 255, 0.8);
     border-radius: 10px;
-    padding: 20px;
-    margin: 10px;
+    padding: 10px;
+    margin: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   }
 
   .tile-bright {
     background-color: rgba(255, 255, 255, 1.0);
     border-radius: 10px;
-    padding: 20px;
-    margin: 10px;
+    padding: 10px;
+    margin: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   }
 
   .tile-dark {
     background-color: rgba(42,134,199, 0.8);
     border-radius: 10px;
-    padding: 20px;
-    margin: 10px;
+    padding: 12px;
+    margin: 0px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   }
 
