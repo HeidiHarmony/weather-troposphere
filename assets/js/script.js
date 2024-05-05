@@ -1,4 +1,4 @@
-const baseURL = 'http://api.openweathermap.org/geo/1.0/';
+const baseURL = 'https://api.openweathermap.org/geo/1.0/';
 const apiKey = '2d84c33cb1d0e6e3ab00bca6bf053ead';
 
 // Event listener for DOM content loaded
@@ -275,7 +275,7 @@ function displayWeatherData() {
         document.getElementById("put-city").innerHTML = weatherData.displayName;
         var currentDate = new Date().toLocaleDateString();
         document.getElementById("put-date").innerHTML = currentDate;
-        document.getElementById("put-conditions").innerHTML = weatherData.currentWeather + '<img src="http://openweathermap.org/img/w/' + weatherData.weatherIcon + '.png">';
+        document.getElementById("put-conditions").innerHTML = weatherData.currentWeather + '<img src="https://openweathermap.org/img/w/' + weatherData.weatherIcon + '.png">';
         document.getElementById("put-temperature").innerHTML = weatherData.currentTemp;
         document.getElementById("put-humidity").innerHTML = weatherData.currentHumidity;
         document.getElementById("put-wind").innerHTML = weatherData.currentWindSpeed;
@@ -330,7 +330,7 @@ function displayForecastData() {
             // Create and append elements to the forecast container
             appendElement(forecastContainer, 'h3', forecastDay + ' ' + forecastDate);
             appendElement(forecastContainer, 'p', forecastWeather);
-            appendElement(forecastContainer, 'img', null, 'http://openweathermap.org/img/w/' + forecastIcon + '.png');
+            appendElement(forecastContainer, 'img', null, 'https://openweathermap.org/img/w/' + forecastIcon + '.png');
             appendElement(forecastContainer, 'p', 'Temp: ' + forecastTemp + '°F');
             appendElement(forecastContainer, 'p', 'Humidity: ' + forecastHumidity + '%');
             appendElement(forecastContainer, 'p', 'Wind: ' + forecastWindSpeed + ' mph');

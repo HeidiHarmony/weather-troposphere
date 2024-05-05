@@ -18,6 +18,11 @@ Other visuals created by Heidi Harmony Carrier (me!)
 
 ### About
 
+Find it at [https://heidiharmony.github.io/weather-troposphere/](https://heidiharmony.github.io/weather-troposphere/)
+Project repo on github at [https://github.com/HeidiHarmony/weather-troposphere](https://github.com/HeidiHarmony/weather-troposphere)
+
+![Weather Troposphere Demo Image](assets/images/weather-troposphere-demo.png)
+
 Weather Troposphere is a weather application powered by [openweathermap.org](https://openweathermap.org/) that will show the current conditions as well as a five-day forecast for the location of your choosing. You may search by city and state, or by zipcode. The information is simple and aimed at the user who would like to easily track weather in multiple locations, such as for use in planning a vacation. Save your favorite locations to pull up data in one click of a button. Weather Troposphere has no advertising cluttering your screen; just a soothing color scheme that makes you feel like you are floating in the clouds. Where weather happens.
 
 ### Frequently Asked Questions
